@@ -1,13 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot Demo</title>
+  <style>
+    :root {
+      --bg:#0f172a;
+      --card:#1f2a44;
+      --radius:14px;
+      --shadow:0 20px 40px -10px rgba(0,0,0,0.4);
+      --transition:.25s cubic-bezier(.4,.2,.2,1);
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      color: #e3e8ff;
+    }
+    *{box-sizing:border-box;}
+    body {
+      margin:0;
+      min-height:100vh;
+      background: linear-gradient(135deg,#0f172a 0%,#1f2a44 70%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:1rem;
+    }
+    h1 { margin: .5rem 0; font-size:1.75rem; letter-spacing:1px; }
+    p { margin:0 0 1rem; }
+    .chat-container {
+      width:100%;
+      max-width:480px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      background: rgba(31,42,68,.85);
+      border-radius: var(--radius);
+      padding:0;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    .messages {
+      flex:1;
+      padding:1rem;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .message {
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      font-size:14px;
+      line-height:1.4;
+    }
+    .message.user .bubble {
+      background: rgba(255,255,255,.1);
+      margin-left:auto;
+      border-radius:16px 16px 4px 16px;
+    }
+    .message.bot .bubble {
+      background: rgba(255,255,255,.08);
+      border-radius:16px 16px 16px 4px;
+    }
+    .bubble {
+      padding:10px 14px;
+      position:relative;
+      max-width:75%;
+      word-wrap:break-word;
+      backdrop-filter: blur(6px);
+    }
+    .input-row {
+      display:flex;
+      gap:10px;
+      padding:12px 14px;
+      background: rgba(23,32,60,.9);
+      border-top:1px solid rgba(255,255,255,.07);
+    }
+    .input-row input {
+      flex:1;
+      padding:12px 14px;
+      border:none;
+      border-radius:999px;
+      background: rgba(255,255,255,.05);
+      color: #f0f6ff;
+      font-size:14px;
+      outline:none;
+    }
+    .input-row button {
+      padding:0 16px;
+      border:none;
+      background: #6366f1;
+      color:#fff;
+      font-weight:600;
+      border-radius:999px;
+      cursor:pointer;
+      position:relative;
+      transition: var(--transition);
+    }
+    .input-row button:active {
+      transform: scale(.97);
+    }
+    .small {
+      font-size:12px;
+      opacity:.75;
+      margin-top:4px;
+    }
+    .loader {
+      display:inline-block;
+      width:16px;
+      height:16px;
+      position:relative;
+    }
+    .loader span {
+      position:absolute;
+      width:4px;
+      height:4px;
+      background:#a3b3ff;
+      border-radius:50%;
+      animation: blink 1s infinite ease-in-out;
+    }
+    .loader span:nth-child(1){ left:0; animation-delay:0s;}
+    .loader span:nth-child(2){ left:6px; animation-delay:0.15s;}
+    .loader span:nth-child(3){ left:12px; animation-delay:0.3s;}
+    @keyframes blink {
+      0%,100%{ opacity:.2; transform: translateY(0);}
+      50%{ opacity:1; transform: translateY(-3px);}
+    }
+    /* scrollbar */
+    .messages::-webkit-scrollbar { width:10px; }
+    .messages::-webkit-scrollbar-track { background:rgba(255,255,255,0.02); border-radius:5px; }
+    .messages::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:5px; }
+  </style>
 </head>
 <body>
-    <h1>HELLO WORLD</h1>
-    <p>This is a test site for YIC</p>
-    
+  <h1>HELLO WORLD</h1>
+  <p>This is a test site for YIC</p>
+
+  <div class="chat-container" aria-label="Chat bot interface">
+    <div class="messages" id="messages" role="log" aria-live="polite">
+      <!-- messages injected here -->
+    </div>
+    <div class="input-row">
+      <input id="user-input" type="text" placeholder="Type a message…" aria-label="Message input" />
+      <button id="send-btn" aria-label="Send message">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const messagesEl = document.getElementById("messages");
+    const input = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    function appendMessage(text, who, opts = {}) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message " + who;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      if (opts.loading) {
+        const loader = document.createElement("div");
+        loader.className = "loader";
+        for (let i=0;i<3;i++) {
+          const dot = document.createElement("span");
+          loader.appendChild(dot);
+        }
+        bubble.appendChild(loader);
+      } else {
+        bubble.textContent = text;
+      }
+
+      wrapper.appendChild(bubble);
+      messagesEl.appendChild(wrapper);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return wrapper;
+    }
+
+    function simulateBotResponse(userText, placeholderEl) {
+      // after 1s, replace loader with reply
+      setTimeout(() => {
+        placeholderEl.querySelector(".bubble").textContent = "You said: " + userText;
+        placeholderEl.classList.remove("loading");
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }, 1000 + Math.random()*800);
+    }
+
+    function handleSend() {
+      const text = input.value.trim();
+      if (!text) return;
+      appendMessage(text, "user");
+      input.value = "";
+      // show bot typing
+      const botPlaceholder = appendMessage("", "bot", { loading: true });
+      simulateBotResponse(text, botPlaceholder);
+    }
+
+    sendBtn.addEventListener("click", handleSend);
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        handleSend();
+      }
+    });
+
+    // optional: greet
+    appendMessage("Hi! This is a demo chat bot. Type something and hit send.", "bot");
+  </script>
 </body>
 </html>
