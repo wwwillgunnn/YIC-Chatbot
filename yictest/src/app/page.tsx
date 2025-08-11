@@ -27,33 +27,37 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = input.trim();
     if (!text) return;
 
-    // Add user message
     setMessages((prev) => [...prev, { sender: "user", text }]);
     setInput("");
 
-    // Add loading bot message
-    const loadingMessage: Message = {
-      sender: "bot",
-      text: "",
-      loading: true,
-    };
+    const loadingMessage: Message = { sender: "bot", text: "", loading: true };
     setMessages((prev) => [...prev, loadingMessage]);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+
+      const data = await res.json();
+
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = {
-          sender: "bot",
-          text: `You said: ${text}`,
-        };
+        updated[updated.length - 1] = { sender: "bot", text: data.reply };
         return updated;
       });
-    }, 1200);
+    } catch (err) {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { sender: "bot", text: "Error fetching reply." };
+        return updated;
+      });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
