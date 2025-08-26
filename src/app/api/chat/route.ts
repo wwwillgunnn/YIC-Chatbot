@@ -1,9 +1,13 @@
+// Run this API route on the edge runtime (faster, closer to users)
+export const runtime = "edge"; 
+
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
+// Initialize Groq client with API key from environment variables
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Device map
+// Map of device names to their internal IDs in the YIC system
 const devices: Record<string, string> = {
   lights: "3101",
   front_sprinklers: "4101",
@@ -12,10 +16,17 @@ const devices: Record<string, string> = {
   alarm: "6101",
 };
 
-// Intent + scenario detection
+/**
+ * Detects the user's intent from a natural language message.
+ * Uses Groq LLM to classify commands into:
+ *   - Single device control (lights, sprinklers, etc.)
+ *   - Multi-device scenarios (intruder, weather_alert, system_check)
+ * Returns a structured JSON object describing the action.
+ */
 async function detectIntent(
   message: string
 ): Promise<{ intent: string; deviceId?: string; action?: string; duration?: number }> {
+  // Instruction context for the LLM to follow strictly
   const context = `
 You are an intent + scenario classifier. 
 Devices: 
@@ -41,29 +52,40 @@ Rules:
 - If no match, respond with { "intent": "none" }.
 `;
 
+  // Build the chat prompt for Groq
   const prompt = [
     { role: "system", content: context },
     { role: "user", content: message },
   ] as Groq.Chat.Completions.ChatCompletionMessageParam[];
 
+  // Ask Groq LLM to classify the message
   const completion = await groq.chat.completions.create({
     model: "llama3-8b-8192",
     messages: prompt,
   });
 
+  // Parse JSON response safely
   try {
     return JSON.parse(completion.choices[0]?.message?.content ?? "{}");
   } catch {
-    return { intent: "none" };
+    return { intent: "none" }; // fallback if parsing fails
   }
 }
 
+/**
+ * Handles POST requests to /api/chat
+ * Expects a { message } in the body.
+ * 1. Detects intent using detectIntent()
+ * 2. Runs multi-device scenarios (intruder, weather_alert, system_check)
+ * 3. Runs single-device actions (on/off with optional duration)
+ * 4. Falls back to general AI chatbot if no intent is found
+ */
 export async function POST(req: Request) {
   try {
     const { message } = await req.json();
     const intentData = await detectIntent(message);
 
-    // Multi-device scenarios
+    // --- Handle multi-device scenarios ---
     if (intentData.intent === "intruder") {
       const actions = [
         { device: "lights", id: devices.lights, action: "on" },
@@ -92,14 +114,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: "🔍 Systems nominal" });
     }
 
-    // Single device control
+    // --- Handle single-device commands ---
     if (intentData.deviceId && intentData.action) {
+      // Find human-readable name of the device
       const deviceName = Object.keys(devices).find(
         (key) => devices[key] === intentData.deviceId
       );
 
+      // Build response message
       let reply = `✅ ${intentData.action === "on" ? "Turning on" : "Turning off"} ${deviceName?.replace("_", " ")}`;
 
+      // Add duration if specified (for sprinklers, etc.)
       if (intentData.duration) {
         reply += ` for ${intentData.duration} minutes`;
       }
@@ -112,7 +137,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // Fallback chatbot
+    // --- Fallback chatbot (no intent detected) ---
     const completion = await groq.chat.completions.create({
       model: "llama3-8b-8192",
       messages: [
@@ -123,6 +148,7 @@ export async function POST(req: Request) {
 
     const reply = completion.choices[0]?.message?.content || "…";
     return NextResponse.json({ reply });
+
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
@@ -131,7 +157,8 @@ export async function POST(req: Request) {
 
 
 
-// ! Old working implementation
+
+// ! Old working implementation !
 // import { NextResponse } from "next/server";
 // import Groq from "groq-sdk";
 // import { execFile } from "child_process";
