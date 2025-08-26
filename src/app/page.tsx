@@ -31,9 +31,11 @@ export default function Home() {
     const text = input.trim();
     if (!text) return;
 
+    // 1. Optimistic add user message
     setMessages((prev) => [...prev, { sender: "user", text }]);
     setInput("");
 
+    // 2. Add loading bot bubble
     const loadingMessage: Message = { sender: "bot", text: "", loading: true };
     setMessages((prev) => [...prev, loadingMessage]);
 
@@ -46,6 +48,7 @@ export default function Home() {
 
       const data = await res.json();
 
+      // replace loading bubble with AI reply
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = { sender: "bot", text: data.reply };
