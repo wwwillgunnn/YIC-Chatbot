@@ -56,9 +56,13 @@ Now visit → http://localhost:3000
 
 ## Project Structure
 /app
+
   /api/chat         → Next.js API routes (chat, intent detection)
+  
 /components   → React UI components (chat UI, inputs)
+
 /python       → Python device control functions
+
 /public       → Static assets
 
 ---
