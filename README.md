@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🤖 You In Control Chat Bot  
 
-## Getting Started
+The **You In Control (YIC) Chat Bot** is a smart assistant that connects natural language commands to real-world devices. It can process user intent using AI models (Groq, OpenAI, Ollama, LM Studio, etc.), and then trigger actions in the **YIC System** such as turning on lights, activating sprinklers, or starting security cameras.  
 
-First, run the development server:
+Supports both:  
+- **Direct device control** (e.g. “turn on the front sprinklers for 15 minutes”)  
+- **Multi-device scenarios** (e.g. “intruder alert” → lights + cameras + alarm)  
 
-```bash
+---
+
+## ✨ Features  
+
+- 🔌 **Device Control**  
+  - Lights, sprinklers (with duration), security cameras, alarm  
+- 🛡️ **Scenario Detection**  
+  - Intruder → lights + alarm + cameras  
+  - Weather Alert → shut down sprinklers & lights  
+  - System Check → quick system health reply  
+- 💬 **AI Chat Fallback**  
+  - If no device action is detected, the bot gives a short AI-generated reply  
+- ⚡ **Optimistic UI**  
+  - User messages appear instantly, with streaming bot replies  
+
+---
+
+## 🛠️ Tech Stack  
+
+- **Frontend & API** → [Next.js](https://nextjs.org/) (React + Serverless API routes)  
+- **AI Processing** → Public AI APIs (Groq, OpenAI, Ollama) + local LLMs (LM Studio, etc.)  
+- **Device Execution** → Python functions (bridge to YIC system devices)  
+- **Hosting** → [Cloudflare](https://www.cloudflare.com/)  
+
+---
+
+## 🚀 Getting Started  
+
+Follow these steps to set up the project locally:  
+
+### 1️⃣ Clone the Repository  
+`git clone https://github.com/yourusername/you-in-control-chatbot.git`
+`cd you-in-control-chatbot`
+
+### 2️⃣ Install Dependencies
+ensure you have node js installed on your computer
+
+`npm install`
+
+### 3️⃣ Set Up Environment Variables
+Create a .env.local file in the root of the project and add your keys:
+
+### 4️⃣ Run Next.js Dev Server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Now visit → http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
+/app
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+  /api/chat         → Next.js API routes (chat, intent detection)
+  
+/components   → React UI components (chat UI, inputs)
 
-## Learn More
+/python       → Python device control functions
 
-To learn more about Next.js, take a look at the following resources:
+/public       → Static assets
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## ✅ Example Commands
 
-## Deploy on Vercel
+turn on the lights
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+turn on the front sprinklers for 10 minutes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+intruder alert
+
+system check
+
+---
+
+`git clone && npm install && npm run dev`
