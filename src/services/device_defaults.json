@@ -1,0 +1,37 @@
+{
+  "lights": {
+    "port": "/dev/tty.usbserial-10",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3101", "turn_off": "3100" }
+  },
+  "fan": {
+    "port": "/dev/tty.usbserial-11",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3201", "turn_off": "3200" }
+  },
+  "sprinklers": {
+    "port": "/dev/tty.usbserial-12",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3301", "turn_off": "3300" }
+  },
+  "front_camera": {
+    "port": "/dev/tty.usbserial-13",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3401", "turn_off": "3400" }
+  },
+  "back_camera": {
+    "port": "/dev/tty.usbserial-14",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3501", "turn_off": "3500" }
+  },
+  "garden_lights": {
+    "port": "/dev/tty.usbserial-15",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3601", "turn_off": "3600" }
+  },
+  "garage_door": {
+    "port": "/dev/tty.usbserial-16",
+    "baudrate": 38400,
+    "payloads": { "turn_on": "3701", "turn_off": "3700" }
+  }
+}
